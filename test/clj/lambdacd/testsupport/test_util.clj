@@ -134,8 +134,17 @@
   (= :running (step-status ctx)))
 
 (defn step-success? [ctx build-number step-id]
+  ;(println "foo" (-> (ps/get-all (:pipeline-state-component ctx))
+  ;                   (get build-number)))
   (= :success (step-status (assoc ctx :build-number build-number
                                       :step-id step-id))))
+(defn step-finished? [ctx build-number step-id]
+  ;(println "foo" (-> (ps/get-all (:pipeline-state-component ctx))
+  ;                   (get build-number)))
+  (let [status (step-status (assoc ctx :build-number build-number
+                                      :step-id step-id))]
+    (or (= :success status) (= :failure status))))
+
 (defn step-failure? [ctx build-number step-id]
   (= :failure (step-status (assoc ctx :build-number build-number
                                       :step-id step-id))))

@@ -31,7 +31,9 @@
     (is (not (before? [1 1] [1 1]))))
   (testing "that [3 2] is not before [2 2]"
     (is (not (before? [3 2] [2 2])))
-    (is (later-than? [3 2] [2 2]))))
+    (is (later-than? [3 2] [2 2])))
+  (testing "that a different branch is not later or before"
+    (is (not (later-than? [2 1] [2 1 1])))))
 
 (deftest parent-relationship-test
   (testing "you need a common postfix to be a parent of something"

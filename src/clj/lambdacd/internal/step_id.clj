@@ -16,6 +16,7 @@
         a-and-b (map vector equal-length-a equal-length-b)
         first-not-equal (first (drop-while (fn [[x y]] (= x y)) a-and-b))
         [x y] first-not-equal]
+    (println a b equal-length-a equal-length-b x y)
     (if (nil? first-not-equal)
       (> (count a) (count b))
       (> x y))))

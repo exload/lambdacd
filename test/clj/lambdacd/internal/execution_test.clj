@@ -300,4 +300,17 @@
                       :retrigger-mock-for-build-number 0 }
                  [1 1] {:status :success :out "I am nested" :retrigger-mock-for-build-number 0}
                  [2 1] {:the-some :val :status :success}
-                 [2] { :status :success }}} (tu/without-ts (ps/get-all (:pipeline-state-component context))))))))
+                 [2] { :status :success }}} (tu/without-ts (ps/get-all (:pipeline-state-component context)))))))
+  (testing "that nested steps in other branches aren't retriggered"
+    (let [initial-state { 0 {[1] { :status :success }
+                             [1 1] {:status :success}
+                             [1 1 1] {:status :success :out "I am nested"}
+                             [2 1 1] {:status :unknown :out "this will be retriggered"}}}
+          pipeline `((some-control-flow-thats-called
+                       (some-control-flow-thats-called some-step-that-fails-if-retriggered some-step-to-retrigger)
+                       (some-control-flow-thats-called some-step-that-fails-if-retriggered some-successful-step)) some-successful-step)
+          context (some-ctx-with :initial-pipeline-state initial-state)]
+      (pipeline-state/start-pipeline-state-updater (:pipeline-state-component context) context)
+      (retrigger pipeline context 0 [2 1 1] 1)
+      (wait-for (tu/step-finished? context 1 [1]))
+      (is (map-containing {1 {[1] {:status :success}}} (tu/without-ts (ps/get-all (:pipeline-state-component context))))))))

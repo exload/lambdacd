@@ -246,11 +246,13 @@
 (defn- replace-with-mock-or-recur [step-id-to-retrigger build-number]
   (fn [[step-id step]]
     (cond
-      (and
-        (step-id/before? step-id step-id-to-retrigger)
-        (not (step-id/parent-of? step-id step-id-to-retrigger))) (cons mock-step [build-number])
-      (step-id/parent-of? step-id step-id-to-retrigger) (cons (first step) (mock-for-steps (rest step) step-id step-id-to-retrigger build-number))
-      :else step)))
+      (or
+        (step-id/later-than? step-id step-id-to-retrigger)
+        (= step-id step-id-to-retrigger)) (do (println "dostep" step-id step-id-to-retrigger step) step)
+      (step-id/parent-of? step-id step-id-to-retrigger)
+        (cons (first step) (mock-for-steps (rest step) step-id step-id-to-retrigger build-number))
+      :else
+        (do (println "foo " step) (cons mock-step [build-number])))))
 
 (defn- mock-for-steps [steps cur-step-id step-id-to-retrigger build-number]
   (->> steps
